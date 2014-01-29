@@ -1,0 +1,52 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:          ptp_god
+# Required-Start:    $all
+# Required-Stop:     $network $local_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts PrintToPeer's god
+# Description:       starts PrintToPeer's god process manager
+### END INIT INFO
+
+USER="pi"
+CONF_DIR="/etc/ptp_god/*.rb"
+PID="/var/PrintToPeer/pids/god.pid"
+LOG="/var/PrintToPeer/logs/god.log"
+RETVAL=0
+
+# env
+HOME="/home/$USER"
+RBENV_ROOT="$HOME/.rbenv"
+PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
+CONF="/etc/ptp_god.rb"
+NAME="ptp_god"
+DESC="PrintToPeer's God"
+
+case "$1" in
+    start)
+      god -P $PID --no-syslog -l $LOG -c $CONF
+      RETVAL=$?
+  ;;
+    stop)
+      CUR_PID=`cat $PID`
+      rm $PID
+      kill $CUR_PID
+      RETVAL=$?
+  ;;
+    restart)
+      kill `cat $PID`
+      god -P $PID --no-syslog -l $LOG -c $CONF
+      RETVAL=$?
+  ;;
+    status)
+      RETVAL=$?
+  ;;
+    *)
+      echo "Usage: ptp_god {start|stop|restart|status}"
+      exit 1
+  ;;
+esac
+
+exit $RETVAL
