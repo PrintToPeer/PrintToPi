@@ -410,6 +410,6 @@ EM.run {
   Signal.trap('INT')  { EM.stop }
   Signal.trap('TERM') { EM.stop }
 
-  client = PrintToClient.new(host: 'fat-jack.local:3000')
+  client = PrintToClient.new(host: 'winter.local:3000')
   EM.stop unless client.configured?
 }

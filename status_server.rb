@@ -70,6 +70,7 @@ end
 
 def set_hostname
   config = get_config
+  `sudo sh -c 'sed -ri s/ptp-server-new/#{config['hostname']}/g /etc/hosts'`
   `sudo sh -c 'echo "#{config['hostname']}" > /etc/hostname'`
   `sudo /etc/init.d/hostname.sh start`
   config['hostname']
@@ -103,8 +104,8 @@ post '/finalize-config' do
   elsif configured?
     new_hostname = set_hostname
     expand_root_partition
+    Process.spawn("sleep 2; sudo reboot")
     body({root_expanded: true, new_hostname: new_hostname, message: 'Expanding root partition and rebooting.'}.to_json)
-    `sudo reboot`
     # Sinatra::Application.quit! # Sinatra 1.5 needed
   else
     status 409
