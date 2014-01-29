@@ -1,8 +1,8 @@
-SERVER      = "#{HOME}/PrintToPi/ptp_client.rb"
+CLIENT      = "#{HOME}/PrintToPi/ptp_client.rb"
 
 God.watch do |w|
-  w.name  = "status_server"
-  w.start = "ruby #{SERVER}"
+  w.name  = "ptp_client"
+  w.start = "ruby #{CLIENT}"
   w.uid  = 'pi'
   w.gid  = 'pi'
   w.log  = '/var/PrintToPeer/logs/ptp_client.log'
