@@ -92,7 +92,7 @@ private
         @client.uuid_map.each do |uuid,port_name|
           machine = @client.machines[port_name]
           if machine.nil?
-            @client.delete(uuid)
+            @client.uuid_map.delete(uuid)
             next
           end
           machine_status = {printing: machine.printing, current_line: machine.current_line, paused: machine.paused}
@@ -407,7 +407,7 @@ private
       if File.exist?(socket_location)
         EM.connect_unix_domain(socket_location, Machine, self, port_name)
       else
-        Process.spawn("$HOME/bin/burijji -p #{port_name} -b #{baud} -s #{socket_location}")
+        Process.spawn("$HOME/bin/burijji -p /dev/#{port_name} -b #{baud} -s #{socket_location}")
         EM::Timer.new(10){ EM.connect_unix_domain(socket_location, Machine, self, port_name) }
       end
 
