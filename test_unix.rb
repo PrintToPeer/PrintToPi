@@ -7,7 +7,7 @@ module TestUnix
     # my_sequence = ['M108 S0','G28', 'M84']
     # my_sequence = ['M72 P1']
     EM::Timer.new(1){
-      send_data MessagePack.pack(action: 'subscribe', data: {type: 'temperature'})
+      send_data MessagePack.pack(action: 'subscribe', data: {type: 'all'})
       # send_data MessagePack.pack({:action=>"send_commands", :data=>["G28"]})
       # send_data MessagePack.pack(action: 'send_commands', data: my_sequence)
       # send_data MessagePack.pack(action: 'print_file', data: '/home/kazw/butterfly.gcode')
