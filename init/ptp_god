@@ -19,7 +19,7 @@ RETVAL=0
 # env
 HOME="/home/$USER"
 RBENV_ROOT="$HOME/.rbenv"
-PYENV_ROOT="$HOME/.[y]env"
+PYENV_ROOT="$HOME/.pyenv"
 PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
 CONF="/etc/ptp_god.rb"
 NAME="ptp_god"
