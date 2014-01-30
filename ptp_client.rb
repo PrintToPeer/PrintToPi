@@ -91,6 +91,10 @@ private
         
         @client.uuid_map.each do |uuid,port_name|
           machine = @client.machines[port_name]
+          if machine.nil?
+            @client.delete(uuid)
+            next
+          end
           machine_status = {printing: machine.printing, current_line: machine.current_line, paused: machine.paused}
           update_data[:machines][uuid] = {temperatures: machine.temperatures, status: machine_status}
         end
