@@ -270,6 +270,26 @@ class Machine < EventMachine::Connection
     @job_id = nil
   end
 
+  def info(data)
+    @port_info      ||= data[:port_info]
+    @machine_info   ||= data[:machine_info]
+
+    @current_line     = data[:current_line]
+    @printing         = data[:printing]
+    @paused           = data[:paused]
+  end
+
+  def temperature(data)
+    return if !data.is_a?(Hash) || (data.is_a?(Hash) && data.empty?)
+    @connected  ||= true
+    @temperatures.merge!(data)
+  end
+
+  def server_info(data)
+    return unless [:version, :pid].all?{|e| data.key?(e)}
+    @socket_info = data
+  end
+
 private
     def post_init
       send(action: 'subscribe', data: {type: 'info'})
@@ -290,26 +310,6 @@ private
       return unless [:action,:data].all?{|key| event.key?(key)}
       action = event[:action]
       self.__send__(action.to_sym, event[:data]) unless self.public_methods.grep(/\A#{action}\z/).empty?
-    end
-
-    def info(data)
-      @port_info      ||= data[:port_info]
-      @machine_info   ||= data[:machine_info]
-
-      @current_line     = data[:current_line]
-      @printing         = data[:printing]
-      @paused           = data[:paused]
-    end
-
-    def temperature(data)
-      return if !data.is_a?(Hash) || (data.is_a?(Hash) && data.empty?)
-      @connected  ||= true
-      @temperatures.merge!(data)
-    end
-
-    def server_info(data)
-      return unless [:version, :pid].all?{|e| data.key?(e)}
-      @socket_info = data
     end
 end
 
