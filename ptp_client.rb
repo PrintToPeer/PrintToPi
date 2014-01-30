@@ -403,7 +403,7 @@ private
       if File.exist?(socket_location)
         EM.connect_unix_domain(socket_location, Machine, self, port_name)
       else
-        Process.spawn("$HOME/bin/burijji -p #{first_port} -b #{baud} -s #{socket_location}")
+        Process.spawn("$HOME/bin/burijji -p #{port_name} -b #{baud} -s #{socket_location}")
         EM::Timer.new(10){ EM.connect_unix_domain(socket_location, Machine, self, port_name) }
       end
 
