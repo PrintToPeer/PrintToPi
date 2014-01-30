@@ -27,7 +27,7 @@ DESC="PrintToPeer's God"
 
 case "$1" in
     start)
-      pyenv init -
+      eval "$(pyenv init -)"
       god -P $PID --no-syslog -l $LOG -c $CONF
       RETVAL=$?
   ;;
