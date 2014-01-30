@@ -9,8 +9,7 @@ God.watch do |w|
 
   w.start_grace = 30.seconds
   if File.exists? CONFIG_FILE
-    w.keepalive(memory_max: 30.megabytes,
-                cpu_max:    30.percent)
+    w.keepalive(cpu_max:    30.percent)
   else
     w.keepalive
   end
