@@ -19,7 +19,8 @@ RETVAL=0
 # env
 HOME="/home/$USER"
 RBENV_ROOT="$HOME/.rbenv"
-PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
+PYENV_ROOT="$HOME/.[y]env"
+PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
 CONF="/etc/ptp_god.rb"
 NAME="ptp_god"
 DESC="PrintToPeer's God"
