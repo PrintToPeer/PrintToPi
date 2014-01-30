@@ -4,7 +4,7 @@ God.watch do |w|
   w.name  = "ptp_client"
   w.start = "ruby #{CLIENT}"
   w.uid  = 'pi'
-  w.gid  = 'pi'
+  w.gid  = 'dialout'
   w.log  = '/var/PrintToPeer/logs/ptp_client.log'
 
   w.start_grace = 30.seconds
