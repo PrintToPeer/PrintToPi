@@ -274,7 +274,7 @@ private
     def post_init
       send(action: 'subscribe', data: {type: 'info'})
       send(action: 'subscribe', data: {type: 'temperature'})
-      EM::Timer.new(2){ @client.machine_init_check(@port_name) }
+      EM::Timer.new(20){ @client.machine_init_check(@port_name) }
     end
 
     def send(data)
