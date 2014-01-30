@@ -356,9 +356,9 @@ class PrintToClient
       values    = iserials[iserial]
       baud      = values['baud']
       uuid      = values['uuid']
-      connect_machine(port_name, baud)
+      connected = connect_machine(port_name, baud)
       EM::Timer.new(15) do
-        if @machines.key?(port_name)
+        if connected && @machines.key?(port_name)
           @uuid_map[uuid] = port_name
           @network.machine_connected(uuid)
         end
@@ -397,12 +397,16 @@ private
         
       p [:connecting_machine, port_name, Time.now]
 
+      return nil if @machines.key?(port_name)
+
       if File.exist?(socket_location)
         EM.connect_unix_domain(socket_location, Machine, self, port_name)
       else
         Process.spawn("$HOME/bin/burijji -p #{first_port} -b #{baud} -s #{socket_location}")
         EM::Timer.new(10){ EM.connect_unix_domain(socket_location, Machine, self, port_name) }
       end
+
+      return true
     end
 end
 
