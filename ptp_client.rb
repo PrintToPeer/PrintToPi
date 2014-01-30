@@ -361,6 +361,7 @@ class PrintToClient
         if connected && @machines.key?(port_name)
           @uuid_map[uuid] = port_name
           @network.machine_connected(uuid)
+          p [:connecting_machine_to_ptp, Time.now]
         end
       end
     end
