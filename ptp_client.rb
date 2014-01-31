@@ -253,6 +253,7 @@ class Machine < EventMachine::Connection
     @unpacker                   = MessagePack::Unpacker.new(symbolize_keys: true)
     @temperatures               = Hash.new
     @client.machines[port_name] = self
+    @port_info                  = @client.port_info[port_name]
   end
 
   def print_file(gcode_file, job_id)
@@ -275,7 +276,6 @@ class Machine < EventMachine::Connection
   end
 
   def info(data)
-    @port_info      ||= data[:port_info]
     @machine_info   ||= data[:machine_info]
 
     @current_line     = data[:current_line]
@@ -320,7 +320,7 @@ end
 class PrintToClient
   include Helpers
 
-  attr_reader :config, :host, :machines, :uuid_map, :iserial_map
+  attr_reader :config, :host, :machines, :uuid_map, :iserial_map, :port_info
 
   def initialize(host: 'printtopeer.io')
     return nil unless configured?
@@ -332,6 +332,7 @@ class PrintToClient
     @machines    = Hash.new
     @uuid_map    = Hash.new
     @iserial_map = Hash.new
+    @port_info   = Hash.new
     update_iserial_map
   end
 
@@ -384,15 +385,22 @@ class PrintToClient
   def update_iserial_map
     ports = Dir.glob(['/dev/ttyACM*','/dev/ttyUSB*'])
     return if ports.empty?
-    iserials = Hash.new
-    
+
+    iserials  = Hash.new
+    port_info = Hash.new
+
     ports.each do |port|
-      dev_info          = `/sbin/udevadm info --query=property --name=#{port}`.split
-      iserial           =  dev_info.select{|property| property.start_with?('ID_SERIAL_SHORT')}.first.split('=').last
-      iserials[iserial] = port_to_name(port)
+      dev_info             = `/sbin/udevadm info --query=property --name=#{port}`.split
+      iserial              = dev_info.select{|property| property.start_with?('ID_SERIAL_SHORT')}.first.split('=').last
+      vid                  = dev_info.select{|property| property.start_with?('ID_VENDOR_ID')}.first.split('=').last
+      pid                  = dev_info.select{|property| property.start_with?('ID_MODEL_ID')}.first.split('=').last
+      port_name            = port_to_name(port)
+      iserials[iserial]    = port_name
+      port_info[port_name] = {iserial: iserial, vid: vid, pid: pid}
     end
     
     @iserial_map = iserials
+    @port_info   = port_info
   end
 
 private
