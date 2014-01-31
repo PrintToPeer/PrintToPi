@@ -253,7 +253,7 @@ class Machine < EventMachine::Connection
     @unpacker                   = MessagePack::Unpacker.new(symbolize_keys: true)
     @temperatures               = Hash.new
     @client.machines[port_name] = self
-    @port_info                  = @client.port_info[port_name]
+    @port_info                  = @client.port_info[port_name].clone
   end
 
   def print_file(gcode_file, job_id)
