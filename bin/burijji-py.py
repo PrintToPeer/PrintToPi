@@ -22,7 +22,6 @@ arguments = parser.parse_args()
 
 # Configure the path
 sys.path.append(os.getenv("HOME") + "/Burijji")
-sys.path.append(os.getenv("HOME") + "/Burijji/mb_serial")
 sys.path.append(os.getenv("HOME") + "/Burijji/Printrun")
 
 # Build the server
