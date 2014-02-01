@@ -77,7 +77,7 @@ class PtpNetwork
   end
 
   def job_completed(job_id, uuid)
-    send(action: 'server.job_status', data: {state: 'completed', job_id: job_id, uuid: uuid)
+    send(action: 'server.job_status', data: {state: 'completed', job_id: job_id, uuid: uuid})
   end
 
 private
