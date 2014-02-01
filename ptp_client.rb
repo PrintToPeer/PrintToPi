@@ -56,6 +56,10 @@ class PtpNetwork
     send(action: 'server.machine_connected', data: {uuid: uuid})
   end
 
+  def machine_disconnected(uuid)
+    send(action: 'server.machine_disconnected', data: {uuid: uuid})
+  end
+
   def find_or_create_machine(port_info, port_name)
     send(action: 'server.find_or_create_machine', data: {port_info: port_info, port_name: port_name})
   end
@@ -93,9 +97,10 @@ private
           machine = @client.machines[port_name]
           if machine.nil?
             @client.uuid_map.delete(uuid)
+            machine_disconnected(uuid)
             next
           end
-          machine_status = {printing: machine.printing, current_line: machine.current_line, paused: machine.paused}
+          machine_status = {printing: machine.printing, current_line: machine.current_line, paused: machine.paused, current_segment: machine.segment}
           update_data[:machines][uuid] = {temperatures: machine.temperatures, status: machine_status}
         end
         update_data[:uuid_map]        = @client.uuid_map
@@ -190,6 +195,14 @@ class PtpEventHandler
     machine.send_commands(payload['data']['commands']) unless machine.nil?
   end
 
+  def update_routines(payload)
+    machine_uuid = payload['data']['uuid']
+    port_name    = @network.client.uuid_map[machine_uuid]
+    machine      = @network.client.machines[port_name]
+
+    machine.update_routines(payload['data']['routines']) unless machine.nil?
+  end
+
   def run_job(payload)
     machine_uuid = payload['data']['uuid']
     job_id       = payload['data']['job_id'].to_i
@@ -244,7 +257,7 @@ end
 class Machine < EventMachine::Connection
   attr_reader   :connected, :port_name, :port_info, :type, :model, :extruder_count,
                 :machine_info, :temperatures, :current_line, :printing, :paused,
-                :socket_info, :job_id
+                :socket_info, :job_id, :segment
 
   def initialize(client, port_name)
     super
@@ -256,13 +269,17 @@ class Machine < EventMachine::Connection
     @port_info                  = @client.port_info[port_name].clone
   end
 
+  def update_routines(routines)
+    send(action: 'update_routines', data: routines)
+  end
+
   def print_file(gcode_file, job_id)
     @job_id = job_id
     send(action: 'print_file', data: gcode_file)
   end
 
   def send_commands(commands)
-    return unless commands.is_a?(Array)
+    return nil unless commands.is_a?(Array)
     send(action: 'send_commands', data: commands)
   end
 
@@ -278,19 +295,22 @@ class Machine < EventMachine::Connection
   def info(data)
     @machine_info   ||= data[:machine_info]
 
-    @current_line     = data[:current_line]
-    @printing         = data[:printing]
-    @paused           = data[:paused]
+    @current_line = data[:current_line]
+    @printing     = data[:printing]
+    @paused       = data[:paused]
+    @segment      = data[:current_segment]
   end
 
   def temperature(data)
-    return if !data.is_a?(Hash) || (data.is_a?(Hash) && data.empty?)
-    @connected  ||= true
-    @temperatures.merge!(data)
+    return nil if !data.is_a?(Hash) || (data.is_a?(Hash) && data.empty?)
+
+    @connected           ||= true
+    @temperatures[:bed]    = data[:b]
+    @temperatures[:nozzle] = data.select{|key| key.to_s.start_with?('t')}.values
   end
 
   def server_info(data)
-    return unless [:version, :pid].all?{|e| data.key?(e)}
+    return nil unless [:version, :pid].all?{|e| data.key?(e)}
     @socket_info = data
   end
 
@@ -311,9 +331,13 @@ private
     end
 
     def receive_event(event)
-      return unless [:action,:data].all?{|key| event.key?(key)}
+      return nil unless [:action,:data].all?{|key| event.key?(key)}
       action = event[:action]
       self.__send__(action.to_sym, event[:data]) unless self.public_methods.grep(/\A#{action}\z/).empty?
+    end
+
+    def unbind
+      @client.machines.delete(@port_name)
     end
 end
 
@@ -338,7 +362,7 @@ class PrintToClient
 
   def connect_first_available(baud)
     first_port           = Dir.glob(['/dev/ttyACM*','/dev/ttyUSB*']).reject{|port| @machines.key?(port_to_name(port))}.first
-    return if first_port.nil?
+    return nil if first_port.nil?
     port_name            = port_to_name(first_port)
     connect_machine(port_name, baud)
 
@@ -351,7 +375,7 @@ class PrintToClient
   end
 
   def connect_machines(iserials)
-    return unless iserials.is_a?(Hash)
+    return nil unless iserials.is_a?(Hash)
     update_iserial_map
     connected_iserials = iserials.keys.select{|iserial| @iserial_map.key?(iserial)}
 
@@ -384,7 +408,7 @@ class PrintToClient
 
   def update_iserial_map
     ports = Dir.glob(['/dev/ttyACM*','/dev/ttyUSB*'])
-    return if ports.empty?
+    return nil if ports.empty?
 
     iserials  = Hash.new
     port_info = Hash.new
@@ -407,7 +431,7 @@ private
     def connect_machine(port_name, baud)
       baud               ||= 115200
       socket_location      = "#{@socket_dir}/#{port_name}.sock"
-        
+
       p [:connecting_machine, port_name, Time.now]
 
       return nil if @machines.key?(port_name)
