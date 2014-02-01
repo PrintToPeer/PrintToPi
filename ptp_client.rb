@@ -213,7 +213,7 @@ class PtpEventHandler
       http       = EM::HttpRequest.new(payload['data']['gcode_url']).get
       
       http.callback{
-        file_operation = file_operation_proc(job_id: job_id, gcode_file: gcode_file, http: http, machine: machine)
+        file_operation = file_operation_proc(job_id: job_id, gcode_file: gcode_file, http: http, machine_uuid: machine_uuid)
         file_callback  = file_callback_proc(machine: machine, job_id: job_id, gcode_file: gcode_file)
         EM.defer(file_operation, file_callback)
       }
@@ -235,9 +235,9 @@ class PtpEventHandler
   alias_method :websocket_rails_channel_token, :channel_settings
 
 private
-    def file_operation_proc(job_id: nil, gcode_file: nil, http: nil, machine: nil)
+    def file_operation_proc(job_id: nil, gcode_file: nil, http: nil, machine_uuid: nil)
       Proc.new {
-        @network.download_complete(job_id, machine.uuid)
+        @network.download_complete(job_id, machine_uuid)
         begin
           fd = File.open(gcode_file, 'w+')
           fd.write http.response
