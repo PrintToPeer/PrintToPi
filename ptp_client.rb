@@ -210,7 +210,7 @@ class PtpEventHandler
       port_name  = @network.client.uuid_map[machine_uuid]
       machine    = @network.client.machines[port_name]
       gcode_file = @gcode_root+"/Job #{job_id}.gcode"
-      http       = EM::HttpRequest.new(payload[:data][:gcode_url]).get
+      http       = EM::HttpRequest.new(payload['data']['gcode_url']).get
       
       http.callback{
         file_operation = file_operation_proc(job_id: job_id, gcode_file: gcode_file, http: http)
@@ -385,10 +385,10 @@ class PrintToClient
       values    = iserials[iserial]
       baud      = values['baud']
       uuid      = values['uuid']
-      connected = connect_machine(port_name, baud)
+      connect_machine(port_name, baud)
       EM::Timer.new(15) do
-        @network.machine_connected(uuid)
-        if connected && @machines.key?(port_name)
+        if @machines.key?(port_name)
+          @network.machine_connected(uuid)
           @uuid_map[uuid] = port_name
           p [:connecting_machine_to_ptp, Time.now]
         end
