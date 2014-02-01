@@ -275,7 +275,7 @@ class Machine < EventMachine::Connection
     send(action: 'update_routines', data: routines)
   end
 
-  def print_file(gcode_file, job_id)
+  def print_file(job_id, gcode_file)
     @job_id = job_id
     send(action: 'print_file', data: gcode_file)
   end
