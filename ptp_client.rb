@@ -68,16 +68,16 @@ class PtpNetwork
     send(action: 'websocket_rails.pong')
   end
 
-  def download_complete(job_id)
+  def download_complete(job_id, uuid)
     send(action: 'server.job_status', data: {state: 'download_complete', job_id: job_id})
   end
 
-  def job_started(job_id)
-    send(action: 'server.job_status', data: {state: 'started', job_id: job_id})
+  def job_started(job_id, uuid)
+    send(action: 'server.job_status', data: {state: 'started', job_id: job_id, uuid: uuid})
   end
 
-  def job_completed(job_id)
-    send(action: 'server.job_status', data: {state: 'completed', job_id: job_id})
+  def job_completed(job_id, uuid)
+    send(action: 'server.job_status', data: {state: 'completed', job_id: job_id, uuid: uuid)
   end
 
 private
@@ -213,7 +213,7 @@ class PtpEventHandler
       http       = EM::HttpRequest.new(payload['data']['gcode_url']).get
       
       http.callback{
-        file_operation = file_operation_proc(job_id: job_id, gcode_file: gcode_file, http: http)
+        file_operation = file_operation_proc(job_id: job_id, gcode_file: gcode_file, http: http, machine: machine)
         file_callback  = file_callback_proc(machine: machine, job_id: job_id, gcode_file: gcode_file)
         EM.defer(file_operation, file_callback)
       }
@@ -235,9 +235,9 @@ class PtpEventHandler
   alias_method :websocket_rails_channel_token, :channel_settings
 
 private
-    def file_operation_proc(job_id: nil, gcode_file: nil, http: nil)
+    def file_operation_proc(job_id: nil, gcode_file: nil, http: nil, machine: nil)
       Proc.new {
-        @network.download_complete(job_id)
+        @network.download_complete(job_id, machine.uuid)
         begin
           fd = File.open(gcode_file, 'w+')
           fd.write http.response
@@ -284,11 +284,11 @@ class Machine < EventMachine::Connection
   end
 
   def print_started(data)
-    @client.network.job_started(@job_id)
+    @client.network.job_started(@job_id, @uuid)
   end
 
   def print_complete(data)
-    @client.network.job_completed(@job_id)
+    @client.network.job_completed(@job_id, @uuid)
     @job_id = nil
   end
 
