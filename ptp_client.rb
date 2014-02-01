@@ -259,6 +259,8 @@ class Machine < EventMachine::Connection
                 :machine_info, :temperatures, :current_line, :printing, :paused,
                 :socket_info, :job_id, :segment
 
+  attr_accessor :uuid
+
   def initialize(client, port_name)
     super
     @client                     = client
@@ -388,6 +390,7 @@ class PrintToClient
       connect_machine(port_name, baud)
       EM::Timer.new(15) do
         if @machines.key?(port_name)
+          @machines[port_name].uuid = uuid
           @network.machine_connected(uuid)
           @uuid_map[uuid] = port_name
           p [:connecting_machine_to_ptp, Time.now]
