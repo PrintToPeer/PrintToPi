@@ -316,6 +316,10 @@ class Machine < EventMachine::Connection
     @socket_info = data
   end
 
+  def unbind
+    @client.machines.delete(@port_name)
+  end
+
 private
     def post_init
       send(action: 'subscribe', data: {type: 'info'})
@@ -336,10 +340,6 @@ private
       return nil unless [:action,:data].all?{|key| event.key?(key)}
       action = event[:action]
       self.__send__(action.to_sym, event[:data]) unless self.public_methods.grep(/\A#{action}\z/).empty?
-    end
-
-    def unbind
-      @client.machines.delete(@port_name)
     end
 end
 
