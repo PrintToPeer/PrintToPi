@@ -69,7 +69,7 @@ class PtpNetwork
   end
 
   def download_complete(job_id, uuid)
-    send(action: 'server.job_status', data: {state: 'download_complete', job_id: job_id})
+    send(action: 'server.job_status', data: {state: 'download_complete', job_id: job_id, uuid: uuid})
   end
 
   def job_started(job_id, uuid)
