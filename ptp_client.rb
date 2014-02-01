@@ -213,7 +213,7 @@ class PtpEventHandler
       http       = EM::HttpRequest.new(payload[:data][:gcode_url]).get
       
       http.callback{
-        file_operation = file_operation_proc(job_id: job_id, gcode_file: gcode_file)
+        file_operation = file_operation_proc(job_id: job_id, gcode_file: gcode_file, http: http)
         file_callback  = file_callback_proc(machine: machine, job_id: job_id, gcode_file: gcode_file)
         EM.defer(file_operation, file_callback)
       }
@@ -235,7 +235,7 @@ class PtpEventHandler
   alias_method :websocket_rails_channel_token, :channel_settings
 
 private
-    def file_operation_proc(job_id: nil, gcode_file: nil)
+    def file_operation_proc(job_id: nil, gcode_file: nil, http: nil)
       Proc.new {
         @network.download_complete(job_id)
         begin
@@ -387,9 +387,9 @@ class PrintToClient
       uuid      = values['uuid']
       connected = connect_machine(port_name, baud)
       EM::Timer.new(15) do
+        @network.machine_connected(uuid)
         if connected && @machines.key?(port_name)
           @uuid_map[uuid] = port_name
-          @network.machine_connected(uuid)
           p [:connecting_machine_to_ptp, Time.now]
         end
       end
