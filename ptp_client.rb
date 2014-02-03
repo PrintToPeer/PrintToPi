@@ -68,16 +68,8 @@ class PtpNetwork
     send(action: 'websocket_rails.pong')
   end
 
-  def download_complete(job_id, uuid)
-    send(action: 'server.job_status', data: {state: 'download_complete', job_id: job_id, uuid: uuid})
-  end
-
-  def job_started(job_id, uuid)
-    send(action: 'server.job_status', data: {state: 'started', job_id: job_id, uuid: uuid})
-  end
-
-  def job_completed(job_id, uuid)
-    send(action: 'server.job_status', data: {state: 'completed', job_id: job_id, uuid: uuid})
+  def update_job_state(job_id, uuid, state)
+    send(action: 'server.job_status', data: {state: state, job_id: job_id, uuid: uuid})
   end
 
 private
@@ -237,7 +229,7 @@ class PtpEventHandler
 private
     def file_operation_proc(job_id: nil, gcode_file: nil, http: nil, machine_uuid: nil)
       Proc.new {
-        @network.download_complete(job_id, machine_uuid)
+        @network.update_job_state(job_id, machine_uuid, 'download_complete')
         begin
           fd = File.open(gcode_file, 'w+')
           fd.write http.response
@@ -285,13 +277,16 @@ class Machine < EventMachine::Connection
     send(action: 'send_commands', data: commands)
   end
 
-  def print_started(data)
-    @client.network.job_started(@job_id, @uuid)
-  end
-
-  def print_complete(data)
-    @client.network.job_completed(@job_id, @uuid)
-    @job_id = nil
+  def segment_completed(data)
+    case data
+    when 'start_segment'
+      @network.update_job_state(@job_id, @uuid, 'start_routine_complete')
+    when 'print_segment'
+      @network.update_job_state(@job_id, @uuid, 'print_complete')
+    when 'end_segment'
+      @network.update_job_state(@job_id, @uuid, 'end_routine_complete')
+      @job_id = nil
+    end
   end
 
   def info(data)
