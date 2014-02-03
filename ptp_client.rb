@@ -280,11 +280,11 @@ class Machine < EventMachine::Connection
   def segment_completed(data)
     case data
     when 'start_segment'
-      @network.update_job_state(@job_id, @uuid, 'start_routine_complete')
+      @client.network.update_job_state(@job_id, @uuid, 'start_routine_complete')
     when 'print_segment'
-      @network.update_job_state(@job_id, @uuid, 'print_complete')
+      @client.network.update_job_state(@job_id, @uuid, 'print_complete')
     when 'end_segment'
-      @network.update_job_state(@job_id, @uuid, 'end_routine_complete')
+      @client.network.update_job_state(@job_id, @uuid, 'end_routine_complete')
       @job_id = nil
     end
   end
