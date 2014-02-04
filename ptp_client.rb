@@ -92,7 +92,7 @@ private
             machine_disconnected(uuid)
             next
           end
-          machine_status = {printing: machine.printing, current_line: machine.current_line, paused: machine.paused, current_segment: machine.segment}
+          machine_status = {printing: machine.printing, current_line: machine.current_line, paused: machine.paused, current_segment: machine.segment, job_id: machine.job_id}
           update_data[:machines][uuid] = {temperatures: machine.temperatures, status: machine_status}
         end
         update_data[:uuid_map]        = @client.uuid_map
