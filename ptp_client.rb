@@ -282,7 +282,7 @@ class Machine < EventMachine::Connection
 
   def cancel_print
     @job_id = nil
-    send(action: 'cancel_print', data: '')
+    send(action: 'stop_print', data: '')
   end
 
   def send_commands(commands)
