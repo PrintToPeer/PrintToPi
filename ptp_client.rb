@@ -195,6 +195,14 @@ class PtpEventHandler
     machine.update_routines(payload['data']['routines']) unless machine.nil?
   end
 
+  def cancel_print(payload)
+    machine_uuid = payload['data']['uuid']
+    port_name    = @network.client.uuid_map[machine_uuid]
+    machine      = @network.client.machines[port_name]
+
+    machine.cancel_print unless machine.nil?
+  end
+
   def run_job(payload)
     machine_uuid = payload['data']['uuid']
     job_id       = payload['data']['job_id'].to_i
@@ -270,6 +278,11 @@ class Machine < EventMachine::Connection
   def print_file(job_id, gcode_file)
     @job_id = job_id
     send(action: 'print_file', data: gcode_file)
+  end
+
+  def cancel_print
+    @job_id = nil
+    send(action: 'cancel_print', data: '')
   end
 
   def send_commands(commands)
