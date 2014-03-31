@@ -12,6 +12,15 @@ God.watch do |w|
     w.keepalive(cpu_max:    30.percent)
   else
     w.keepalive
+    w.lifecycle do |on|
+      on.condition(:flapping) do |c|
+        c.to_state = [:start, :restart]
+        c.times = 2
+        c.within = 1.minute
+        c.transition = :unmonitored
+        c.retry_times = 1
+      end
+    end
   end
 end
 
