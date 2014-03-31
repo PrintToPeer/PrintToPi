@@ -19,15 +19,13 @@ RETVAL=0
 # env
 HOME="/home/$USER"
 RBENV_ROOT="$HOME/.rbenv"
-PYENV_ROOT="$HOME/.pyenv"
-PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PYENV_ROOT/bin:$PYENV_ROOT/shims:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
+PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
 CONF="/etc/ptp_god.rb"
 NAME="ptp_god"
 DESC="PrintToPeer's God"
 
 case "$1" in
     start)
-      eval "$(pyenv init -)"
       god -P $PID --no-syslog -l $LOG -c $CONF
       RETVAL=$?
   ;;
