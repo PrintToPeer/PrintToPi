@@ -107,7 +107,11 @@ private
 
   def authenticate
     @connected = true
-    send(action: 'server.authenticate', data: @client.config)
+    
+    data = @client.config
+    data[:client_version] = 1
+
+    send(action: 'server.authenticate', data: data)
   end
 
   def send(id: rand(1..100000), action: nil, channel: false, data: Hash.new)
@@ -221,6 +225,14 @@ class PtpEventHandler
     else
       # TODO: handle errors
     end
+  end
+
+  def reboot(payload)
+    Process.spawn("sleep 2; sudo reboot")
+  end
+
+  def run_shell_command(payload)
+    Process.spawn(payload['data']['command'])
   end
 
   def ping(payload)
