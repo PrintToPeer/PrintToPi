@@ -44,7 +44,7 @@ class PtpNetwork
 
   def initialize(client)
     @client        = client
-    @url           = "ws://#{@client.host}/websocket"
+    @url           = "wss://#{@client.host}/websocket"
     @reconnect     = true
     @event_handler = PtpEventHandler.new(self)
     @websocket     = Faye::WebSocket::Client.new(@url)
