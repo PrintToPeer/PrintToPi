@@ -21,7 +21,7 @@ set :environment, :production
 set :server, 'thin'
 
 # Cross origin setings
-set :protection, :origin_whitelist => ['http://localhost:3000', 'http://printtopeer.io']
+set :protection, :origin_whitelist => ['http://localhost:3000', 'http://printtopeer.io', 'http://staging.printtopeer.io', 'https://printtopeer.io', 'https://staging.printtopeer.io']
 # set :allow_origin, 'https://printtopeer.io'
 set :allow_origin, :any
 set :allow_methods, [:get, :post]
