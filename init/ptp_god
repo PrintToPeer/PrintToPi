@@ -12,7 +12,7 @@
 
 USER="pi"
 CONF_DIR="/etc/ptp_god/*.rb"
-PID="/var/PrintToPeer/pids/god.pid"
+PID="/tmp/ptp_god.pid"
 LOG="/var/PrintToPeer/logs/god.log"
 RETVAL=0
 
