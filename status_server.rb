@@ -5,8 +5,8 @@ require 'yajl/json_gem'
 require 'yaml'
 
 # PTP Config files
-$config_file = "#{ENV['HOME']}/ptp-config.yml"
-$test_file   = "#{ENV['HOME']}/ptp-connection-test"
+$printtopeer_config = "#{ENV['HOME']}/ptp-config.yml"
+$wifi_config = "#{ENV['HOME']}/wifi-config.yml"
 $root_disk   = '/dev/mmcblk0'
 
 # Enable cross origin support
@@ -30,7 +30,7 @@ set :allow_methods, [:get, :post]
 before{ content_type :json }
 
 def configured?
-  File.size?($config_file) ? true : false
+  File.size?($printtopeer_config) ? true : false
 end
 
 def get_config
@@ -76,6 +76,10 @@ def set_hostname
   config['hostname']
 end
 
+def internet_is_ok?
+  `curl http://10.0.213.52:3000/ping` == 'ok'
+end
+
 get '/status' do
   {version: '0.1.0', configured: configured?, sys_info: pi_info}.to_json
 end
@@ -111,4 +115,37 @@ post '/finalize-config' do
     status 409
     body({configured: false, message: 'Server has not yet been configured.'}.to_json)
   end
+end
+
+
+# ------------------- status_server.rb 2.0 ---------------
+
+get '/test_internet' do
+  body({:internet_connected => internet_is_ok?})
+end
+
+get '/scan_wifi' do
+  network_lines = `sudo iwlist scan | grep '^ *ESSID' | cut -d '"' -f 2`
+  networks = network_lines.split("\n").select { |n| n != 'New PrintToPi' }
+  body({:networks => network_lines.split("\n")}.to_json)
+end
+
+post '/setup_user' do
+  email = params['user_email']
+  token = params['new_server_token']
+
+  config_information = { :status => :new, :email => email, :new_server_token => token }
+  File.open($printtopeer_config, 'w'){|file| file.write(config_information.to_yaml)} rescue false
+  
+  body({:setup => true}.to_json)
+end
+
+post '/setup_wifi' do
+  ssid = params['ssid']
+  psk = params['psk']
+
+  wifi_config = { :ssid => ssid, :psk => psk }
+  File.open($wifi_config, 'w') { |f| f.write wifi_config.to_yaml } rescue false
+
+  body({:setup => true}.to_json)
 end
