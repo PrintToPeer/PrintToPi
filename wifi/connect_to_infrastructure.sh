@@ -12,4 +12,5 @@ sudo ifdown --force wlan0
 
 sudo cp ~/PrintToPi/wifi/infrastructure.interfaces /etc/network/interfaces
 sudo cp ~/PrintToPi/wifi/active-infrastructure.conf /etc/wpa_supplicant/wpa_supplicant.conf
+
 sudo ifup wlan0

@@ -32,12 +32,21 @@ set :allow_methods, [:get, :post]
 # Set content type
 before{ content_type :json }
 
+def enable_filesystem_access
+  `sudo mount / -o remount,rw`
+end
+
+def disable_filesystem_access
+  `sudo sync`
+  `sudo mount / -o remount,ro`
+end
+
 def configured?
   File.size?($printtopeer_config) ? true : false
 end
 
 def get_config
-  YAML.load_file($config_file) if configured?
+  YAML.load_file($printtopeer_config) if configured?
 end
 
 def load_config(file_name)
@@ -47,7 +56,11 @@ def load_config(file_name)
 end
 
 def save_config(file_name, config)
+  file_name = '/ro' + file_name if file_name.start_with? '/home'
+
+  enable_filesystem_access
   File.open(file_name, 'w') { |f| f.write config.to_yaml } rescue false
+  disable_filesystem_access
 end
 
 def pi_info
@@ -83,10 +96,15 @@ end
 
 def set_hostname
   config = get_config
-  `sudo sh -c 'sed -ri s/ptp-server-new/#{config['hostname']}/g /etc/hosts'`
-  `sudo sh -c 'echo "#{config['hostname']}" > /etc/hostname'`
+  hostname = config[:hostname]
+
+  enable_filesystem_access
+  `sudo sh -c 'sed -ri s/ptp-server-new/#{hostname}/g /etc/hosts'`
+  `sudo sh -c 'echo "#{hostname}" > /etc/hostname'`
   `sudo /etc/init.d/hostname.sh start`
-  config['hostname']
+  disable_filesystem_access
+
+  hostname
 end
 
 def internet_is_ok?
@@ -114,11 +132,15 @@ def setup_account
   p [:setup_account, :have_response]
 
   data = JSON.parse(response.body)
+
   config[:uuid] = data['uuid']
   config[:password] = data['password']
-  save_config $printtopeer_config, config
+  config[:hostname] = "ptp-server-#{ data['id'] }"
 
- p [:setup_ok]
+  save_config $printtopeer_config, config
+  set_hostname
+
+  p [:setup_ok]
 end
 
 def reboot
@@ -162,13 +184,17 @@ def create_wifi_config
   wpa_supplicant = IO.read("#{ENV['HOME']}/PrintToPi/wifi/infrastructure.conf")
   wpa_supplicant.sub! '$SSID', config[:ssid]
   wpa_supplicant.sub! '$PSK', config[:psk]
-  File.open("#{ENV['HOME']}/PrintToPi/wifi/active-infrastructure.conf", 'w') { |f| f.write wpa_supplicant } rescue false
+
+  File.open("/home/PrintToPi/wifi/active-infrastructure.conf", 'w') { |f| f.write wpa_supplicant } rescue false
 end
 
 def connect_wifi(mode)
   p [:connect_wifi, mode]
   create_wifi_config if mode == :infrastructure
+
+  enable_filesystem_access
   `#{ENV['HOME']}/PrintToPi/wifi/connect_to_#{ mode.to_s }.sh`
+  disable_filesystem_access
 end
 
 boot_wifi

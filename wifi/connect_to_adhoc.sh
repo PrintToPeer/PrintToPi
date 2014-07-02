@@ -13,6 +13,7 @@ sudo killall -9 dhclient
 sudo killall -9 wpa_supplicant
 
 sudo cp ~/PrintToPi/wifi/adhoc.interfaces /etc/network/interfaces
+
 sleep 2
 
 sudo ifup wlan0
