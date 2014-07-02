@@ -1,3 +1,4 @@
+load '/home/pi/PrintToPi/host.rb'
 require 'eventmachine'
 require 'faye/websocket'
 require 'yajl/json_gem'
@@ -44,7 +45,7 @@ class PtpNetwork
 
   def initialize(client)
     @client        = client
-    @url           = "wss://#{@client.host}/websocket"
+    @url           = "#{@client.host}/websocket"
     @reconnect     = true
     @event_handler = PtpEventHandler.new(self)
     @websocket     = Faye::WebSocket::Client.new(@url)
@@ -474,6 +475,6 @@ EM.run {
   Signal.trap('INT')  { EM.stop }
   Signal.trap('TERM') { EM.stop }
 
-  client = PrintToClient.new(host: 'printtopeer.io')
+  client = PrintToClient.new(host: SOCKET_HOST)
   EM.stop unless client.configured?
 }
