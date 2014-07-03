@@ -202,7 +202,7 @@ boot_wifi
 # ------------------- status_server.rb 2.0 ---------------
 
 get '/test_internet' do
-  body({:connected => internet_is_ok?})
+  body({connected: internet_is_ok?}.to_json)
 end
 
 get '/scan_wifi' do
