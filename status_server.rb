@@ -41,6 +41,10 @@ def disable_filesystem_access
   `sudo mount / -o remount,ro`
 end
 
+def has_config?(file_name)
+  File.size?(file_name) ? true : false
+end
+
 def configured?
   File.size?($printtopeer_config) ? true : false
 end
@@ -108,7 +112,7 @@ def set_hostname
 end
 
 def internet_is_ok?
-  `curl https://printtopeer.io`.include? 'Welcome to PrintToPeer'
+  `curl #{HTTP_HOST}`.include? 'Welcome to PrintToPeer'
 end
 
 def setup_account
@@ -128,7 +132,8 @@ def setup_account
 
   p [:setup_account, :make_request]
   response = http.request(request) rescue nil
-  return (p [:setup_failed, response.code, response.body]) unless (!response.nil?) && (response.code == '200')
+  return (p [:setup_failed, :no_response]) unless (!response.nil?)
+  return (p [:setup_failed, response.code, response.body]) unless (response.code == '200')
   p [:setup_account, :have_response]
 
   data = JSON.parse(response.body)
@@ -155,7 +160,7 @@ def boot_wifi
   wifi_config = load_config $wifi_config
   ptp_config = load_config $printtopeer_config
 
-  return if wifi_config[:ok] == true && not ptp_config[:uuid].nil?
+  return if (wifi_config[:ok] == true) && (!ptp_config[:uuid].nil?)
 
   connect_wifi :adhoc
 end
@@ -190,9 +195,9 @@ end
 
 def connect_wifi(mode)
   p [:connect_wifi, mode]
-  create_wifi_config if mode == :infrastructure
 
   enable_filesystem_access
+  create_wifi_config if mode == :infrastructure
   `#{ENV['HOME']}/PrintToPi/wifi/connect_to_#{ mode.to_s }.sh`
   disable_filesystem_access
 end
@@ -264,7 +269,7 @@ post '/confirm_and_reboot' do
   body({reboot: :ok}.to_json)
 
   Thread.new do
-    connect_wifi :infrastructure
+    connect_wifi :infrastructure if load_config($wifi_config)[:ok] == true
     reboot
   end
 end
