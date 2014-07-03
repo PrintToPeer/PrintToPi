@@ -128,7 +128,7 @@ def setup_account
 
   p [:setup_account, :make_request]
   response = http.request(request) rescue nil
-  return (p [:setup_failed, response.code, response.body]) unless (!response.nil?) and (response.code == '200')
+  return (p [:setup_failed, response.code, response.body]) unless (!response.nil?) && (response.code == '200')
   p [:setup_account, :have_response]
 
   data = JSON.parse(response.body)
@@ -155,7 +155,7 @@ def boot_wifi
   wifi_config = load_config $wifi_config
   ptp_config = load_config $printtopeer_config
 
-  return if wifi_config[:ok] == true and not ptp_config[:uuid].nil?
+  return if wifi_config[:ok] == true && not ptp_config[:uuid].nil?
 
   connect_wifi :adhoc
 end
