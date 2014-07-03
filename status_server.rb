@@ -1,4 +1,4 @@
-load '/home/pi/PrintToPi/host.rb'
+load '/boot/host.rb'
 require 'sinatra'
 require 'sinatra/cross_origin'
 require 'thin'

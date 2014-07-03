@@ -1,3 +1,4 @@
+load '/boot/host.rb'
 require 'faye/websocket'
 require 'eventmachine'
 require 'yajl/json_gem'
@@ -5,7 +6,7 @@ require 'yaml'
 
 $config_file = "#{ENV['HOME']}/ptp-config.yml"
 $test_file   = "#{ENV['HOME']}/ptp-connection-test"
-$url         = 'wss://printtopeer.io/websocket'
+$url         = SOCKET_HOST
 
 def make_response(id: rand(1..100000), action: nil, data: {})
   [action, id: id, channel: nil, data: data, token: nil].to_json

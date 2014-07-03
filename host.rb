@@ -1,2 +1,2 @@
-HTTP_HOST = "https://staging.printtopeer.io"
-SOCKET_HOST = "wss://staging.printtopeer.io"
+HTTP_HOST = "https://printtopeer.io"
+SOCKET_HOST = "wss://printtopeer.io"

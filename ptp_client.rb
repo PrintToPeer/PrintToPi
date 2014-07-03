@@ -1,4 +1,4 @@
-load '/home/pi/PrintToPi/host.rb'
+load '/boot/host.rb'
 require 'eventmachine'
 require 'faye/websocket'
 require 'yajl/json_gem'
