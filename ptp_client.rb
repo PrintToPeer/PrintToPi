@@ -148,7 +148,7 @@ end
 class PtpEventHandler
   def initialize(network)
     @network    = network
-    @gcode_root = '/tmp/PrintToPeer/Gcode'
+    @gcode_root = '/home/pi/PrintToPi/gcode'
     FileUtils::mkdir_p(@gcode_root)
   end
 
@@ -216,6 +216,8 @@ class PtpEventHandler
       machine    = @network.client.machines[port_name]
       gcode_file = @gcode_root+"/Job #{job_id}.gcode"
       http       = EM::HttpRequest.new(payload['data']['gcode_url']).get
+
+      Dir.foreach(@gcode_root) { |f| fn = File.join(dir_path, f); File.delete(fn) unless File.directory?(f) }
       
       http.callback{
         file_operation = file_operation_proc(job_id: job_id, gcode_file: gcode_file, http: http, machine_uuid: machine_uuid)
