@@ -112,7 +112,7 @@ def set_hostname
 end
 
 def internet_is_ok?
-  `curl #{HTTP_HOST}`.include? 'Welcome to PrintToPeer'
+  `curl #{HTTP_HOST} --insecure`.include? 'Welcome to PrintToPeer'
 end
 
 def setup_account

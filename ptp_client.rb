@@ -217,7 +217,7 @@ class PtpEventHandler
       gcode_file = @gcode_root+"/Job #{job_id}.gcode"
       http       = EM::HttpRequest.new(payload['data']['gcode_url']).get
 
-      Dir.foreach(@gcode_root) { |f| fn = File.join(dir_path, f); File.delete(fn) unless File.directory?(f) }
+      Dir.foreach(@gcode_root) { |f| fn = File.join(@gcode_root, f); File.delete(fn) unless File.directory?(fn) }
       
       http.callback{
         file_operation = file_operation_proc(job_id: job_id, gcode_file: gcode_file, http: http, machine_uuid: machine_uuid)
