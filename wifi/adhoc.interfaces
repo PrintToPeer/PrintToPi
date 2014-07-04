@@ -8,7 +8,7 @@ allow-hotplug wlan0
 auto wlan0
 iface wlan0 inet static
 address 10.0.213.1
-netmask 255.255.0.0
+netmask 255.255.255.0
 wireless-channel 1
 wireless-essid New PrintToPi
 wireless-mode ad-hoc
