@@ -190,7 +190,7 @@ def create_wifi_config
   wpa_supplicant.sub! '$SSID', config[:ssid]
   wpa_supplicant.sub! '$PSK', config[:psk]
 
-  File.open("/home/PrintToPi/wifi/active-infrastructure.conf", 'w') { |f| f.write wpa_supplicant } rescue false
+  File.open("/home/pi/PrintToPi/wifi/active-infrastructure.conf", 'w') { |f| f.write wpa_supplicant } rescue false
 end
 
 def connect_wifi(mode)
