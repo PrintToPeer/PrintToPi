@@ -11,7 +11,7 @@ require 'uri'
 # PTP Config files
 $printtopeer_config = "#{ENV['HOME']}/ptp-config.yml"
 $wifi_config = "#{ENV['HOME']}/wifi-config.yml"
-$manual_setup_config = "/boot/manual_setup.rb"
+$manual_setup_config = "/boot/manual_setup.txt"
 $root_disk   = '/dev/mmcblk0'
 
 # Enable cross origin support
@@ -167,9 +167,8 @@ end
 def run_manual_setup
   p [:manual_setup, :begin]
   enable_filesystem_access
-  FileUtils.copy_file $manual_setup_config, '/ro' + $ptp_config
-  FileUtils.copy_file '/boot/wpa_supplicant.conf', "/home/pi/PrintToPi/wifi/active-infrastructure.conf" rescue nil
-  FileUtils.rm($manual_setup_config)
+  FileUtils.copy_file $manual_setup_config, '/ro' + $printtopeer_config
+  FileUtils.copy_file '/boot/wpa_supplicant.txt', "/home/pi/PrintToPi/wifi/active-infrastructure.conf" rescue nil
   disable_filesystem_access
 
   p [:manual_setup, :connect_wifi]
@@ -180,15 +179,17 @@ def run_manual_setup
       `sleep 5`
       p [:manual_setup, :wait_for_network]
 
-      redo unless internet_is_ok?
+      if internet_is_ok?
 
-      p [:manual_setup, :do_setup]
-      setup_account
+        p [:manual_setup, :do_setup]
+        setup_account
 
-      p [:manual_setup, :reboot]
-      `sudo reboot`
+        p [:manual_setup, :reboot]
+        # `sudo reboot`
 
-      break
+        break
+
+      end
     end
   end
 end
@@ -222,6 +223,8 @@ end
 
 def create_wifi_config
   config = load_config $wifi_config
+  return if config[:ssid].nil?
+
   p [:create_wifi_config, config]
   wpa_supplicant = IO.read("#{ENV['HOME']}/PrintToPi/wifi/infrastructure.conf")
   wpa_supplicant.sub! '$SSID', config[:ssid]
