@@ -174,23 +174,20 @@ def run_manual_setup
   p [:manual_setup, :connect_wifi]
   connect_wifi :infrastructure
 
-  Thread.new do
-    while true do
+  while true do
+    `sleep 5`
+    p [:manual_setup, :wait_for_network]
+
+    if internet_is_ok?
+
+      p [:manual_setup, :do_setup]
+      setup_account
+
+      p [:manual_setup, :reboot]
       `sleep 5`
-      p [:manual_setup, :wait_for_network]
+      `sudo reboot`
+      `sleep 60`
 
-      if internet_is_ok?
-
-        p [:manual_setup, :do_setup]
-        setup_account
-
-        p [:manual_setup, :reboot]
-        `sleep 5`
-        `sudo reboot`
-
-        break
-
-      end
     end
   end
 end
@@ -273,7 +270,9 @@ post '/setup_user' do
   id = params['user_id']
   token = params['new_server_token']
 
-  config = { :user_id => id, :new_server_token => token }
+  config = load_config $printtopeer_config
+  config[:user_id] = id
+  config[:new_server_token] = token
   save_config $printtopeer_config, config
   
   body({:setup => true}.to_json)
