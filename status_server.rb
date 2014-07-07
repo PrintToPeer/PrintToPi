@@ -11,6 +11,7 @@ require 'uri'
 # PTP Config files
 $printtopeer_config = "#{ENV['HOME']}/ptp-config.yml"
 $wifi_config = "#{ENV['HOME']}/wifi-config.yml"
+$manual_setup_config = "/boot/manual_setup.rb"
 $root_disk   = '/dev/mmcblk0'
 
 # Enable cross origin support
@@ -117,7 +118,6 @@ end
 
 def setup_account
   p [:setup_account, "#{HTTP_HOST}/servers/new"]
-  return (p [:setup_failed, :no_internet]) unless internet_is_ok?
 
   config = load_config $printtopeer_config
 
@@ -156,6 +156,43 @@ def reboot
 end
 
 # ------------------- wifi -------------------------------
+def on_boot_setup
+  ptp_config = load_config $printtopeer_config
+  return unless ptp_config[:uuid].nil?
+
+  return run_manual_setup if has_config? $manual_setup_config
+  boot_wifi
+end
+
+def run_manual_setup
+  p [:manual_setup, :begin]
+  enable_filesystem_access
+  FileUtils.copy_file $manual_setup_config, '/ro' + $ptp_config
+  FileUtils.copy_file '/boot/wpa_supplicant.conf', "/home/pi/PrintToPi/wifi/active-infrastructure.conf" rescue nil
+  FileUtils.rm($manual_setup_config)
+  disable_filesystem_access
+
+  p [:manual_setup, :connect_wifi]
+  connect_wifi :infrastructure
+
+  Thread.new do
+    while true do
+      `sleep 5`
+      p [:manual_setup, :wait_for_network]
+
+      redo unless internet_is_ok?
+
+      p [:manual_setup, :do_setup]
+      setup_account
+
+      p [:manual_setup, :reboot]
+      `sudo reboot`
+
+      break
+    end
+  end
+end
+
 def boot_wifi
   wifi_config = load_config $wifi_config
   ptp_config = load_config $printtopeer_config
@@ -202,7 +239,7 @@ def connect_wifi(mode)
   disable_filesystem_access
 end
 
-boot_wifi
+on_boot_setup
 
 # ------------------- status_server.rb 2.0 ---------------
 
