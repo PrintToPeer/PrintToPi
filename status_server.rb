@@ -185,7 +185,8 @@ def run_manual_setup
         setup_account
 
         p [:manual_setup, :reboot]
-        # `sudo reboot`
+        `sleep 5`
+        `sudo reboot`
 
         break
 
