@@ -48,7 +48,8 @@ private
         
         @client.uuid_map.each do |uuid,port_name|
           machine = @client.machines[port_name]
-          if machine.nil?
+          if machine.nil? || !machine.connected
+            p [:setup_updates_disconnected]
             @client.uuid_map.delete(uuid)
             machine_disconnected(uuid)
             next

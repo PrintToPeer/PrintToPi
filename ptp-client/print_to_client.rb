@@ -68,7 +68,6 @@ class PrintToClient
 
   def update_iserial_map
     ports = Dir.glob(['/dev/ttyACM*','/dev/ttyUSB*'])
-    return nil if ports.empty?
 
     iserials  = Hash.new
     port_info = Hash.new

@@ -64,6 +64,11 @@ class Machine < EventMachine::Connection
     @temperatures[:nozzle] = data.select{|key| key.to_s.start_with?('t')}.values
   end
 
+  def disconnected(data)
+    p [:machine_disconnected, @port_name]
+    @connected = false
+  end
+
   def server_info(data)
     return nil unless [:version, :pid].all?{|e| data.key?(e)}
     @socket_info = data
