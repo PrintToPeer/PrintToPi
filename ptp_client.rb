@@ -9,6 +9,8 @@ require 'fileutils'
 
 Dir["/home/pi/PrintToPi/ptp-client/*.rb"].each { |f| require f }
 
+p `/home/pi/PrintToPi/update/update_all.sh`
+
 EM.run {
   Signal.trap('INT')  { EM.stop }
   Signal.trap('TERM') { EM.stop }
