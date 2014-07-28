@@ -1,4 +1,3 @@
-
 class PtpNetwork
   attr_accessor :reconnect, :channel, :channel_token, :connected
   attr_reader   :client
@@ -61,6 +60,7 @@ private
         
         @client.update_iserial_map
         update_data[:iserial_map]     = @client.iserial_map
+        update_data[:client_version]  = CLIENT_VERSION
 
         send(action: 'server.update_data', data: update_data) unless update_data.empty?
       end
@@ -71,7 +71,6 @@ private
     @connected = true
     
     data = @client.config
-    data[:client_version] = 1
 
     send(action: 'server.authenticate', data: data)
   end
