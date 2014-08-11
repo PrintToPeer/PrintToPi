@@ -1,4 +1,5 @@
 #!/bin/bash
 
 cd /home/pi/bin
+echo "./burijji-py.py $*"
 ./burijji-py.py $*

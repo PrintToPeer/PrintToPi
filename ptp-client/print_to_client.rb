@@ -43,8 +43,9 @@ class PrintToClient
       port_name = port_to_name(port)
       values    = iserials[iserial]
       baud      = values['baud']
+      protocol  = values['protocol']
       uuid      = values['uuid']
-      connect_machine(port_name, baud)
+      connect_machine(port_name, baud, protocol)
       EM::Timer.new(15) do
         if @machines.key?(port_name)
           @machines[port_name].uuid = uuid
@@ -59,7 +60,7 @@ class PrintToClient
   def machine_init_check(port_name)
     machine = @machines[port_name]
     if !machine.nil? && !machine.connected
-      p machine
+      p [:not_connected, machine]
       @machines.delete(port_name)
       machine.close_connection
       Process.kill("TERM", machine.socket_info[:pid])
@@ -87,7 +88,7 @@ class PrintToClient
   end
 
 private
-    def connect_machine(port_name, baud)
+    def connect_machine(port_name, baud, protocol)
       baud               ||= 115200
       socket_location      = "#{@socket_dir}/#{port_name}.sock"
 
@@ -96,9 +97,11 @@ private
       return nil if @machines.key?(port_name)
 
       if File.exist?(socket_location)
+        p [:found_socket, socket_location]
         EM.connect_unix_domain(socket_location, Machine, self, port_name)
       else
-        Process.spawn("sh -c '$HOME/bin/burijji -p /dev/#{port_name} -b #{baud} -s #{socket_location}'")
+        p [:spawn_burijji]
+        Process.spawn("$HOME/bin/burijji -p /dev/#{port_name} -b #{baud} -s #{socket_location} -r '#{protocol}'")
         EM::Timer.new(10){ EM.connect_unix_domain(socket_location, Machine, self, port_name) }
       end
 
