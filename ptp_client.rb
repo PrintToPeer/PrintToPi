@@ -1,4 +1,10 @@
-load '/boot/host.rb'
+if File.exists? '/boot/host.rb'
+  load '/boot/host.rb'
+else
+  HTTP_HOST = "https://printtopeer.io"
+  SOCKET_HOST = "wss://printtopeer.io"
+end
+
 require 'eventmachine'
 require 'faye/websocket'
 require 'yajl/json_gem'
