@@ -5,7 +5,7 @@ God.watch do |w|
   w.start = "ruby #{CLIENT}"
   w.uid  = 'pi'
   w.gid  = 'dialout'
-  w.log  = '/var/PrintToPeer/logs/ptp_client.log'
+  w.log_cmd = '/home/pi/PrintToPi/bin/log.sh /var/PrintToPeer/logs/ptp_client.log'
 
   w.start_grace = 30.seconds
   if File.exists? CONFIG_FILE

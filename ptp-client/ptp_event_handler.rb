@@ -80,8 +80,11 @@ class PtpEventHandler
         file_callback  = file_callback_proc(machine: machine, job_id: job_id, gcode_file: gcode_file)
         EM.defer(file_operation, file_callback)
       }
-      # http.errback{} # TODO: handle errors
+      http.errback{
+        p [:run_job_error, :http_error, payload['data']['gcode_url']]
+      } # TODO: handle errors
     else
+      p [:run_job_error, :machine_not_found]
       # TODO: handle errors
     end
   end

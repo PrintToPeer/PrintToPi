@@ -5,7 +5,7 @@ God.watch do |w|
   w.start = "ruby #{SERVER}"
   w.uid   = 'pi'
   w.gid   = 'pi'
-  w.log   = '/var/PrintToPeer/logs/status_server.log'
+  w.log_cmd = '/home/pi/PrintToPi/bin/log.sh /var/PrintToPeer/logs/status_server.log'
 
   w.start_grace = 30.seconds
   if File.exists? CONFIG_FILE
