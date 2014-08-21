@@ -12,10 +12,6 @@ else
   sudo bash -c 'echo "start_x=1" >> /boot/config.txt'
   sudo mount /boot -o remount
 
-  sudo mount / -o remount,rw
-  sudo chmod ugo-w /ro/var/cache/apt
-  sudo mount / -o remount
-
   echo Done. Rebooting Now.
 
   sudo reboot
