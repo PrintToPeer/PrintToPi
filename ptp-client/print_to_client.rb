@@ -10,6 +10,7 @@ class PrintToClient
     @host        = host
     @config      = load_config
     @network     = PtpNetwork.new(self)
+    @camera      = Camera.new(@network)
     @socket_dir  = "/tmp/PrintToPeer/socks"
     FileUtils::mkdir_p(@socket_dir)
     @machines    = Hash.new

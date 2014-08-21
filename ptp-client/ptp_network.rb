@@ -12,6 +12,10 @@ class PtpNetwork
     setup_updates
   end
 
+  def camera_frame(frame)
+    send(action: 'server.camera_frame', data: {frame: frame}) if @connected
+  end
+
   def machine_connected(uuid)
     send(action: 'server.machine_connected', data: {uuid: uuid})
   end
