@@ -1,7 +1,6 @@
 #!/bin/bash
 
-cd /home/pi/PrintToPi
-LOCAL_TAG=`git describe --abbrev=0 --tags`
+LOCAL_TAG='pi-version-14'
 
 cd /home/pi/Burijji
 BURIJJI_TAG=`git describe --abbrev=0 --tags`
