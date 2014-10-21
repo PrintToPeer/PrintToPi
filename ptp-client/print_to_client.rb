@@ -18,6 +18,8 @@ class PrintToClient
     @iserial_map = Hash.new
     @port_info   = Hash.new
     update_iserial_map
+    send_crash_log
+    truncate_log
   end
 
   def connect_first_available(baud)
@@ -88,6 +90,15 @@ class PrintToClient
     @port_info   = port_info
   end
 
+  def send_crash_log
+    return if @config[:uuid].nil?
+    `/home/pi/PrintToPi/bin/upload-log.sh #{@config[:uuid]} #{HTTP_HOST}`
+  end
+
+  def truncate_log
+    File.truncate('/var/PrintToPeer/logs/ptp_client.log', 0)
+  end
+
 private
     def connect_machine(port_name, baud, protocol)
       baud               ||= 115200
@@ -99,12 +110,18 @@ private
 
       if File.exist?(socket_location)
         p [:found_socket, socket_location]
-        EM.connect_unix_domain(socket_location, Machine, self, port_name)
-      else
-        p [:spawn_burijji]
-        Process.spawn("$HOME/bin/burijji -p /dev/#{port_name} -b #{baud} -s #{socket_location} -r '#{protocol}'")
-        EM::Timer.new(10){ EM.connect_unix_domain(socket_location, Machine, self, port_name) }
+        begin
+          EM.connect_unix_domain(socket_location, Machine, self, port_name)
+          return true
+        rescue
+          p [:connection_error, :removing_socket]
+          File.delete socket_location
+        end
       end
+
+      p [:spawn_burijji]
+      Process.spawn("$HOME/bin/burijji -p /dev/#{port_name} -b #{baud} -s #{socket_location} -r '#{protocol}'")
+      EM::Timer.new(10){ EM.connect_unix_domain(socket_location, Machine, self, port_name) }
 
       return true
     end

@@ -30,6 +30,10 @@ class PtpEventHandler
     @network.client.connect_machines(payload['data'])
   end
 
+  def request_logs(payload)
+    @network.client.send_crash_log
+  end
+
   def machine_info(payload)
     machine_uuid                           = payload['data']['uuid']
     port_name                              = payload['data']['port_name']

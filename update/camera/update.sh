@@ -12,8 +12,5 @@ else
   sudo bash -c 'echo "start_x=1" >> /boot/config.txt'
   sudo mount /boot -o remount
 
-  echo Done. Rebooting Now.
-
-  sudo reboot
-  sleep 30
+  echo "Done. You may need to reboot your Pi for camera support to be enabled."
 fi

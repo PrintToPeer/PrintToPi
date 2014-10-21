@@ -15,6 +15,7 @@ require 'fileutils'
 
 Dir["/home/pi/PrintToPi/ptp-client/*.rb"].each { |f| require f }
 
+p [:ptp_client, :startup]
 p `/home/pi/PrintToPi/update/update_all.sh`
 
 EM.run {
