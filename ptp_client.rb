@@ -13,7 +13,7 @@ require 'yaml'
 require 'em-http'
 require 'fileutils'
 
-Dir["/home/pi/PrintToPi/ptp-client/*.rb"].each { |f| require f }
+Dir["/home/pi/PrintToPi/ptp-client/*.rb"].sort.each { |f| require f }
 
 p [:ptp_client, :startup]
 p `/home/pi/PrintToPi/update/update_all.sh`
