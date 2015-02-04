@@ -3,7 +3,7 @@
 class PrintToClient
   include Helpers
 
-  attr_reader :config, :host, :machines, :uuid_map, :iserial_map, :port_info, :network
+  attr_reader :config, :host, :machines, :uuid_map, :iserial_map, :port_info, :network, :camera
 
   def initialize(host: 'printtopeer.io')
     return nil unless configured?

@@ -74,10 +74,10 @@ class PtpEventHandler
     if @network.client.uuid_map.key?(machine_uuid)
       port_name  = @network.client.uuid_map[machine_uuid]
       machine    = @network.client.machines[port_name]
-      gcode_file = @gcode_root+"/Job #{job_id}.gcode"
+      gcode_file = @gcode_root+"/machine-#{machine_uuid}.gcode"
       http       = EM::HttpRequest.new(payload['data']['gcode_url']).get
 
-      Dir.foreach(@gcode_root) { |f| fn = File.join(@gcode_root, f); File.delete(fn) unless File.directory?(fn) }
+      File.delete(gcode_file) if File.exists?(gcode_file)
       
       http.callback{
         file_operation = file_operation_proc(job_id: job_id, gcode_file: gcode_file, http: http, machine_uuid: machine_uuid)
@@ -99,6 +99,10 @@ class PtpEventHandler
 
   def run_shell_command(payload)
     Process.spawn(payload['data']['command'])
+  end
+
+  def ready_for_next_frame(payload)
+    @network.client.camera.ready_for_next_frame!
   end
 
   def ping(payload)
