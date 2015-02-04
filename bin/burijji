@@ -2,4 +2,4 @@
 
 cd /home/pi/bin
 echo "./burijji-py.py $*"
-./burijji-py.py $*
+./burijji-py.py $* | /home/pi/PrintToPi/bin/log.sh /var/PrintToPeer/logs/burijji.log
