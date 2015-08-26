@@ -1,8 +1,11 @@
+LOG_ALL_MESSAGES = false
+
 class PtpNetwork
   attr_accessor :reconnect, :channel, :channel_token, :connected
   attr_reader   :client
 
   def initialize(client)
+    @last_receipt  = nil
     @client        = client
     @url           = "#{@client.host}/websocket"
     @reconnect     = true
@@ -42,10 +45,28 @@ private
     @websocket.onmessage = lambda{|event| receive(event)}
     @websocket.onclose   = lambda{|event| reconnect}
   end
+  
+  def reconnect_if_incoming_messages_are_being_dropped
+    # Bug: Sometimes the network connection gets wedged where the Pi doesn't receive any
+    # messages from the server, but the server thinks it's still connected. Everything appears 
+    # offline until you try a print or the maintenance console, at which point things break.
+    # 
+    # Solution: Do a client-side reconnect if we haven't gotten a message from the server in 
+    # the last 60 seconds (we're supposed to get a ping every ~10 seconds)
+    return if @last_receipt.nil?
+    
+    time_since_last_receipt = Time.now - @last_receipt
+    return unless time_since_last_receipt > 60
+
+    p [:no_incoming_messages, Time.now, :last_message, @last_receipt]    
+    @websocket.close
+  end
 
   def setup_updates
     EM::PeriodicTimer.new(1) do
       if @connected
+        reconnect_if_incoming_messages_are_being_dropped
+        
         update_data = Hash.new
         update_data[:machines] = Hash.new
         
@@ -86,17 +107,21 @@ private
     else
       response = [action, id: id, channel: nil, data: data, token: nil]
     end
+    p [:send, Time.now, response.to_json[0..300]] if LOG_ALL_MESSAGES
     @websocket.send @binary ? response.to_msgpack.bytes : response.to_json
   end
 
   def receive(event)
+    @last_receipt = Time.now
     @binary = true if event.data.is_a?(Array)
     event  = event.data.to_event
     action = event[:action].sub('.', '_') rescue event[:action].to_s.sub('.', '_')
     @event_handler.__send__(action.to_sym, event[:payload]) unless @event_handler.public_methods.grep(/\A#{action}\z/).empty?
+    p [:receive, Time.now, event] if LOG_ALL_MESSAGES
   end
 
   def reconnect
+    @last_receipt = nil
     p [:no_connection, Time.now]
     @connected = false
     EM::Timer.new(15) do
