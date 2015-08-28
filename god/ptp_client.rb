@@ -1,11 +1,11 @@
-CLIENT      = "#{HOME}/PrintToPi/ptp_client.rb"
+PINE_LAUNCHER      = "#{HOME}/PrintToPi/launch_printtopine.sh"
 
 God.watch do |w|
   w.name  = "ptp_client"
-  w.start = "ruby #{CLIENT}"
+  w.start = "bash #{PINE_LAUNCHER}"
   w.uid  = 'pi'
   w.gid  = 'dialout'
-  w.log_cmd = '/home/pi/PrintToPi/bin/log.sh /var/PrintToPeer/logs/ptp_client.log'
+  w.log_cmd = '/home/pi/PrintToPi/bin/log.sh /var/PrintToPeer/logs/printtopine.log'
 
   w.start_grace = 30.seconds
   if File.exists? CONFIG_FILE
@@ -23,4 +23,3 @@ God.watch do |w|
     end
   end
 end
-
