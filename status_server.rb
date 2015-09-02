@@ -107,6 +107,7 @@ def set_hostname
   `sudo sh -c 'sed -ri s/ptp-server-new/#{hostname}/g /etc/hosts'`
   `sudo sh -c 'echo "#{hostname}" > /etc/hostname'`
   `sudo /etc/init.d/hostname.sh start`
+  `sudo hostname "#{hostname}"`
   disable_filesystem_access
 
   hostname
@@ -151,7 +152,16 @@ end
 def reboot
   Thread.new do
     `sleep 2`
-    `sudo reboot`
+    
+    # Restart all networking
+    `sudo service networking stop`
+    `sudo service networking start`
+    `sudo ifdown eth0`
+    `sudo ifdown wlan0`
+    `sudo ifup eth0`
+    `sudo ifup wlan0`
+    `killall python`
+    `killall ruby`
   end  
 end
 
@@ -185,7 +195,7 @@ def run_manual_setup
 
       p [:manual_setup, :reboot]
       `sleep 5`
-      `sudo reboot`
+      reboot
       `sleep 60`
 
     end
